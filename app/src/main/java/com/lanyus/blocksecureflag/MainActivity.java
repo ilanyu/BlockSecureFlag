@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextPaint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         checkedApps = JSON.parseArray(sharedPreferences.getString("checkedApps", JSON.toJSONString(checkedApps)), CheckedApp.class);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new RecycleViewDivider(MainActivity.this, LinearLayoutManager.HORIZONTAL));
         recyclerView.setAdapter(new RecyclerViewAdapter());
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -95,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             holder.appName.setText(appName);
+            TextPaint tp = holder.appName.getPaint();
+            tp.setFakeBoldText(true);
             holder.appPackageName.setText(appPackageName);
             if (checkedApps.contains(app)) {
                 holder.checkBox.setChecked(true);
