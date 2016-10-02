@@ -13,7 +13,7 @@
             android:value="true"/>
         <meta-data
             android:name="xposeddescription"
-            android:value="阻止添加WindowManager.LayoutParams.FLAG_SECURE标志"/>
+            android:value="阻止添加WindowManager.LayoutParams.FLAG_SECURE标志，可用于截图禁止截图的软件。"/>
         <meta-data
             android:name="xposedminversion"
             android:value="30"/>
