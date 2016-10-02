@@ -1,24 +1,20 @@
 package com.lanyus.blocksecureflag;
 
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextPaint;
-import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
+import com.lanyus.blocksecureflag.adapter.RecyclerViewAdapter;
 import com.lanyus.blocksecureflag.bean.CheckedApp;
 
 import java.util.ArrayList;
@@ -27,6 +23,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
+    private RecyclerViewAdapter recyclerViewAdapter;
     private List<CheckedApp> checkedApps = new ArrayList<>();
 
     @Override
@@ -40,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new RecycleViewDivider(MainActivity.this, LinearLayoutManager.HORIZONTAL));
-        recyclerView.setAdapter(new RecyclerViewAdapter());
+        recyclerViewAdapter = new RecyclerViewAdapter(MainActivity.this, checkedApps);
+        recyclerView.setAdapter(recyclerViewAdapter);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,69 +59,22 @@ public class MainActivity extends AppCompatActivity {
         return editor.commit();
     }
 
-    class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.RecyclerViewViewHolder> {
-
-        private PackageManager pckMan;
-        private List<PackageInfo> packs;
-
-        RecyclerViewAdapter() {
-            pckMan = getPackageManager();
-            packs = pckMan.getInstalledPackages(0);
-        }
-
-        @Override
-        public RecyclerViewViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new RecyclerViewViewHolder(LayoutInflater.from(MainActivity.this).inflate(R.layout.activity_main_lv_item, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerViewViewHolder holder, int position) {
-            String appName = packs.get(position).applicationInfo.loadLabel(pckMan).toString(); //获取App名字
-            String appPackageName = packs.get(position).applicationInfo.packageName; //获取App包名
-            final CheckedApp app = new CheckedApp(appPackageName, appName, holder.checkBox.isChecked());
-            holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        app.setCheck(true);
-                        if (checkedApps.contains(app)) {
-                            checkedApps.remove(app);
-                        }
-                        checkedApps.add(app);
-                    } else {
-                        app.setCheck(false);
-                        checkedApps.remove(app);
-                    }
-                }
-            });
-            holder.appName.setText(appName);
-            TextPaint tp = holder.appName.getPaint();
-            tp.setFakeBoldText(true);
-            holder.appPackageName.setText(appPackageName);
-            if (checkedApps.contains(app)) {
-                holder.checkBox.setChecked(true);
-            } else {
-                holder.checkBox.setChecked(false);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.search_action));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
             }
-        }
 
-        @Override
-        public int getItemCount() {
-            return packs.size();
-        }
-
-        class RecyclerViewViewHolder extends RecyclerView.ViewHolder {
-
-            CheckBox checkBox;
-            TextView appName;
-            TextView appPackageName;
-
-            RecyclerViewViewHolder(View itemView) {
-                super(itemView);
-                checkBox = (CheckBox) itemView.findViewById(R.id.checkbox);
-                appName = (TextView) itemView.findViewById(R.id.appName);
-                appPackageName = (TextView) itemView.findViewById(R.id.appPackageName);
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                recyclerViewAdapter.filterList(newText);
+                return true;
             }
-        }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 }
