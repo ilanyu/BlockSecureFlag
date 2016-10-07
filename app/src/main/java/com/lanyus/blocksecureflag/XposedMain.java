@@ -1,5 +1,6 @@
 package com.lanyus.blocksecureflag;
 
+import android.os.Build;
 import android.view.WindowManager;
 
 import com.alibaba.fastjson.JSON;
@@ -37,13 +38,21 @@ public class XposedMain implements IXposedHookLoadPackage {
         }
         XposedBridge.log("com.lanyus.blocksecureflag Loaded app: " + lpparam.packageName);
 
-        XposedHelpers.findAndHookMethod("android.view.Window", lpparam.classLoader, "addFlags", int.class, new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod("android.view.Window", lpparam.classLoader, "setFlags", int.class, int.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if ((int) param.args[0] == WindowManager.LayoutParams.FLAG_SECURE) {
-                    param.args[0] = 0;
-                }
+                Integer flags = (Integer) param.args[0];
+                flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
+                param.args[0] = flags;
             }
         });
+        if (Build.VERSION.SDK_INT >= 17) {
+            XposedHelpers.findAndHookMethod("android.view.SurfaceView", lpparam.classLoader, "setSecure", boolean.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    param.args[0] = false;
+                }
+            });
+        }
     }
 }
