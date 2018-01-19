@@ -1,5 +1,6 @@
 package com.lanyus.blocksecureflag;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(tb);
-        SharedPreferences sharedPreferences = getSharedPreferences("checkedApp", MODE_WORLD_READABLE + MODE_WORLD_WRITEABLE);
+        SharedPreferences sharedPreferences = getSharedPreferences("checkedApp", Context.MODE_PRIVATE);
         checkedApps = JSON.parseArray(sharedPreferences.getString("checkedApps", JSON.toJSONString(checkedApps)), CheckedApp.class);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean save() {
-        SharedPreferences sharedPreferences = getSharedPreferences("checkedApp", MODE_WORLD_READABLE + MODE_WORLD_WRITEABLE);
+        SharedPreferences sharedPreferences = getSharedPreferences("checkedApp", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("checkedApps", JSON.toJSONString(checkedApps));
         return editor.commit();
